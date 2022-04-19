@@ -1,25 +1,28 @@
+variable "gke_num_nodes" {
+  default     = 2
+  description = "number of gke nodes"
+}
+
 variable "project_id" {}
+
+variable "cluster_name"{
+  type = string
+}
 
 variable "location" {
   description = "location"
 }
 
-# VPC
-resource "google_compute_network" "vpc" {
-  name                    = "${var.project_id}-vpc"
-  auto_create_subnetworks = "false"
+variable "vpc_id" {
+  type = string
 }
 
-# Subnet
-resource "google_compute_subnetwork" "subnet" {
-  name          = "${var.project_id}-subnet"
-  region        = var.region
-  network       = google_compute_network.vpc.name
-  ip_cidr_range = "10.10.0.0/24"
+variable "subnet_id" {
+  type = string
 }
 
-variable "gke_num_nodes" {
-  default     = 2
-  description = "number of gke nodes"
+variable "machine_type" {
+  type = string
+  default = "n1-standard-1"
 }
 

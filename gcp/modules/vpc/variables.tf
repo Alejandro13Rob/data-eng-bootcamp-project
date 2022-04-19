@@ -1,6 +1,5 @@
 # --- variables.tf/gcp/modules/vpc
 
-variable "project_id" {}
 /*
 variable "vpc_name" {
   description = "Name for the VPC"
@@ -44,3 +43,5 @@ variable "public_subnets" {
     "10.0.5.0/24",
     "10.0.6.0/24"]
 }
+
+variable "project_id" {}

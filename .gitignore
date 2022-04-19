@@ -1,4 +1,5 @@
 .env
+.variables
 *.log
 *.dat
 *.json
@@ -10,7 +11,7 @@
 *.tfvars
 
 # Local .terraform directories
-**/.terraform/*
+.terraform*
 
 # .tfstate files
 *.tfstate
