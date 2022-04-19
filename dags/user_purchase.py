@@ -20,7 +20,7 @@ USER_PURCHASE_TABLE_NAME = Variable.get("USER_PURCHASE_TABLE")
 default_args = {
     "owner": "roberto.mendoza",
     'depends_on_past': False,
-    'start_date': airflow.utils.dates.days_ago(1)
+    'start_date': airflow.utils.dates.days_ago(1),
     "email_on_failure": False,
     "email_on_retry": False,
     "email": "ultrainla3@gmail.com",

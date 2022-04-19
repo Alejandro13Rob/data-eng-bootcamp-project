@@ -2,10 +2,13 @@
 
 1. Clone the project:
 
-        $ git clone git_url
+        $ git clone https://github.com/Alejandro13Rob/data-eng-bootcamp-project.git
         $ cd dataengineeringbootcamp
 
 ## Local
+### Requirements
+
+- [Docker](https://www.docker.com/get-started/)
 
 2. Start airflow going to `airflow-local` directory
 
@@ -18,7 +21,7 @@
 4. Go to http://localhost:8080 and access airflow with the airflow user and password.
 
 
-## GCP Cloud
+## Project in GCP
 
 ### Requirements
 
@@ -28,135 +31,85 @@
 - [Kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/)
 - [Helm](https://helm.sh/docs/intro/install/)
 - [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/)
-
-A gcloud project with the following APIs enabled:
-- Kubernetes Engine API
-
-#### Dependencies
-- GCloud cli
-- Kubernetes cluster version: 1.20 
-- Terraform >= 1.0.11
+- A gcloud project with the following APIs enabled:
+        - Kubernetes Engine API
+- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 
 ### Running
 
-#### Kubernetes
+#### Create a Kubernetes Cluster
 
 ```shell
-cd gcp
+cd terraform
 terraform init
-terraform apply --var-file=terraform.tfvars
-```
-Once the cluster is created, set the kubectl context:
-
-```
-gcloud container clusters get-credentials $(terraform output -raw kubernetes_cluster_name) --region $(terraform output -raw location)
+terraform apply
 ```
 
-#### Airflow
-To work with Airflow we will use a NFS service.
+To work with Airflow we will use a NFS service. For that, make the bash script executable
+```shell
+chmod +x airflow_on_kubernetes.sh 
+````
 
-Create a namespace
-```
-kubectl create namespace nfs
-```
-Create the server 
-```
-kubectl -n nfs apply -f nfs-server.yaml 
-```
-Export the server
-```
-export NFS_SERVER=$(kubectl -n nfs get service/nfs-server -o jsonpath="{.spec.clusterIP}") 
-```
-Create a namespace for storage deployment:
-```
-kubectl create namespace storage
-```
-Add chart for the NFS-provisioner
-```
-helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
-```
-Install NFS-external-provisioner
-```
-helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
-    --namespace storage \
-    --set nfs.server=$NFS_SERVER \
-    --set nfs.path=/
+Run the bash script to create NFS server and run Airflow on the Kubernetes Cluster
+```shell
+. ./airflow_on_kubernetes.sh
 ```
 
-To deploy Airflow on Kuberntes, we need to create a namespace
-```
-kubectl create namespace airflow
-kubectl get namespaces
+
+***Problem solution:*** If you get a time out error, you could try with an old version of Airflow. Change it in the `.sh` file 
+```shell
+helm install airflow apache-airflow/airflow --namespace airflow --version 1.0.0
 ```
 
-Fetch the official Helm of Apache Airflow, then update the repo to make you got the latest version of it
-```
-helm repo add apache-airflow https://airflow.apache.org
-helm repo update
-helm search repo airflow
-```
-Deploy Airflow with Helm install
-```
-helm install airflow apache-airflow/airflow --namespace airflow --debug
-```
+#### First time before running the project
+You will need to create a new `values.yaml` according to the version of airflow you are running.
+Follow the same commands as in `. ./airflow_on_kubernetes.sh` but before creating the secrets run
 
+Generate a private key with ssh-keygen
+````
+ssh-keygen -t rsa
+````
 Create a [service account in the project](https://console.cloud.google.com/iam-admin/serviceaccounts) and download the JSON file generated, save it under `credentials` folder.
 
-To save the JSON key file as a Secret in GCP run
-```
-kubectl create secret generic terraform-user --from-file=credentials/key.json -n airflow
-```
-
-Create a Kubernetes [secret](https://kubernetes.io/docs/concepts/configuration/secret/) for connections
-```
-kubectl create secret generic airflow-connections --from-env-file=.env -n airflow
-```
-
-Check the secrets with
+Follow the " create secrets" commands with your generated files and check them using
 ```
 kubectl get secrets -n airflow
 kubectl describe secrets/airflow-connections -n airflow
 ```
 
-Create [ConfigMap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/) for variables 
-```
-kubectl create configmap airflow-variables --from-env-file=.variables -n airflow
-```
+Deploy the public key on the Git repository (Settings -> Deploy Key)
 
+Follow the Configmap commands and update your airflow installation.
 Check the variables with
 ```
 kubectl describe configmaps airflow-variables -n airflow
 kubectl get configmap airflow-variables -o yaml -n airflow
 ```
 
-Install the airflow chart from the repository
+##### Accessing to Airflow dashboard
+
+Check your cluster is running with no problems
 ```
-helm install airflow -f airflow-cluster.yaml apache-airflow/airflow --namespace airflow
+kubectl cluster-info
+kubectl get nodes -o wide
 ```
 Verify that our pods are up and running
 ```
 kubectl get pods -n airflow
+helm ls -n airflow
 ```
 
-##### Accessing to Airflow dashboard
-
-The Helm chart shows how to connect:
+Access the webserver by running the following command in a new terminal
 ```
-You can now access your dashboard(s) by executing the following command(s) and visiting the corresponding port at localhost in your browser:
-
-Airflow Webserver:     kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow
-Flower dashboard:      kubectl port-forward svc/airflow-flower 5555:5555 --namespace airflow
-Default Webserver (Airflow UI) Login credentials:
-    username: admin
-    password: admin
-Default Postgres connection credentials:
-    username: postgres
-    password: postgres
-    port: 5432
-
-You can get Fernet Key value by running the following:
-
-    echo Fernet Key: $(kubectl get secret --namespace airflow airflow-fernet-key -o jsonpath="{.data.fernet-key}" | base64 --decode)
+kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow
+```
+Visit 
+```
+http://localhost:8080/home
+```
+Also you can get Fernet Key value by running the following:
+```
+echo Fernet Key: $(kubectl get secret --namespace airflow airflow-fernet-key -o jsonpath="{.data.fernet-key}" | base64 --decode)
 ```
 
 
@@ -164,6 +117,6 @@ You can get Fernet Key value by running the following:
 To destroy the GKE cluster run:
 
 ```
-terraform destroy --var-file=terraform.tfvars
+cd terraform
+terraform destroy
 ```
-
