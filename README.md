@@ -32,7 +32,8 @@
 - [Helm](https://helm.sh/docs/intro/install/)
 - [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/)
 - A gcloud project with the following APIs enabled:
-        - Kubernetes Engine API
+        - Kubernetes Engine
+        - Dataproc
 - [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 
 ### Running
@@ -42,6 +43,7 @@
 ```shell
 cd terraform
 terraform init
+terraform plan
 terraform apply
 ```
 
