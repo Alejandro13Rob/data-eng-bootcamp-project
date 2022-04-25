@@ -22,6 +22,12 @@ USER_PURCHASE_TABLE_NAME = 'user_purchase'
 DATAPROC_TEMP_BUCKET = 'dev-dataproc_temp-martin_denton_b6uf7'
 DATAPROC_CLUSTER_NAME = 'dev-dataproc_cluster-martin_denton_c7vg8'
 DATAPROC_REGION = 'us-west1'
+MOVIE_REVIEWS_SCRIPT = 'movie_reviews.py'
+MOVIES_REVIEWS_INPUT = 'movie_review.csv'
+MOVIES_REVIEWS_OUTPUT = 'movie_review_stage.csv'
+LOGS_REVIEWS_SCRIPT = 'log_reviews.py'
+LOGS_REVIEWS_INPUT = 'log_ewviews.csv'
+LOGS_REVIEWS_OUTPUT = 'ovie_review_stage.csv'
 
 
 # Default arguments
@@ -87,7 +93,7 @@ with DAG(
     # Save to Postgres
     task_load_user_purchase_data_to_db = PythonOperator(
         task_id="load_user_purchase_data_to_db",
-        python_callable=transform_and_load_user_purchase_data,
+        python_callable=load_user_purchase_data,
         op_kwargs={"csv_file": CSV_FILENAME},
     )
 
