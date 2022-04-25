@@ -29,7 +29,7 @@ default_args = {
     "owner": "roberto.mendoza",
     'depends_on_past': False,
     "email": "ultrainla3@gmail.com",
-    'start_date': airflow.utils.dates.days_ago(1),
+    'start_date': dates.days_ago(1),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
