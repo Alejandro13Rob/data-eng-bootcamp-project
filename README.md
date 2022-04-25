@@ -32,8 +32,11 @@
 - [Helm](https://helm.sh/docs/intro/install/)
 - [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/)
 - A gcloud project with the following APIs enabled:
+        - Compute Engine
         - Kubernetes Engine
         - Dataproc
+        - Cloud SQL Admin
+        - Cloud Resource Manager
 - [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 
 ### Running

@@ -2,8 +2,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import tempfile
 
-from airflow.models import DAG
-from airflow.models import Variable
+from airflow.models import DAG, Variable
 from airflow.utils import dates
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
@@ -17,12 +16,12 @@ from airflow.providers.google.cloud.operators.dataproc import (
 
 
 
-CSV_FILENAME = Variable.get("USER_PURCHASE_CSV")
-PROJECT_ID = Variable.get("PROJECT_ID")
-USER_PURCHASE_TABLE_NAME = Variable.get("USER_PURCHASE_TABLE")
-DATAPROC_TEMP_BUCKET = Variable.get("DATAPROC_TEMP_BUCKET")
-DATAPROC_CLUSTER_NAME = Variable.get("DATAPROC_CLUSTER_NAME")
-DATAPROC_REGION = Variable.get("DATAPROC_REGION")
+CSV_FILENAME = 'user_purchase.csv'
+PROJECT_ID = 'data-bootcamp-8739'
+USER_PURCHASE_TABLE_NAME = 'user_purchase'
+DATAPROC_TEMP_BUCKET = 'dev-dataproc_temp-martin_denton_b6uf7'
+DATAPROC_CLUSTER_NAME = 'dev-dataproc_cluster-martin_denton_c7vg8'
+DATAPROC_REGION = 'us-west1'
 
 
 # Default arguments

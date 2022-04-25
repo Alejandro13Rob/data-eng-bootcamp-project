@@ -1,6 +1,8 @@
 variable "instance_name" {
   description = "Name for the sql instance database"
-  default     = "data-bootcamp-capstone-project"
+}
+resource "random_id" "db_name_suffix" {
+  byte_length = 4
 }
 
 variable "instance_tier" {
@@ -23,38 +25,43 @@ variable "db_username" { }
 variable "db_password" { }
 
 
-resource "google_sql_database_instance" "sql_instance" {
-  name              = var.instance_name
-  database_version  = var.database_version
+resource "google_sql_database_instance" "master" {
+  name              = "${var.instance_name}-instance-${random_id.db_name_suffix.hex}"
   region            = var.region
+  database_version  = var.database_version
 
   settings {
     tier      = var.instance_tier
+    availability_type = "REGIONAL"
     disk_size = var.disk_space
-
-    location_preference {
-      zone = var.region
-    }
-
     ip_configuration {
       authorized_networks {
         value           = "0.0.0.0/0"
         name            = "test-cluster"
       }
     }
+    location_preference {
+      zone = "us-west1-a"
+    }
   }
 
   deletion_protection = "false"
 }
 
-resource "google_sql_database" "database" {
-  name     = var.db_name
-  instance = google_sql_database_instance.sql_instance.name
-}
-
-resource "google_sql_user" "users" {
-  name     = var.db_username
-  instance = google_sql_database_instance.sql_instance.name
+resource "google_sql_user" "main" {
+  depends_on = [
+    google_sql_database_instance.master
+  ]
+  name     = "main"
+  instance = google_sql_database_instance.master.name
   host     = "*"
   password = var.db_password
+}
+
+resource "google_sql_database" "main" {
+  depends_on = [
+    google_sql_user.main
+  ]
+  name     = "main"
+  instance = google_sql_database_instance.master.name
 }
