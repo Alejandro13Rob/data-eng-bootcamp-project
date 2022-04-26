@@ -19,8 +19,8 @@ from airflow.providers.google.cloud.operators.dataproc import (
 CSV_FILENAME = 'user_purchase.csv'
 PROJECT_ID = 'data-bootcamp-8739'
 USER_PURCHASE_TABLE_NAME = 'user_purchase'
-DATAPROC_TEMP_BUCKET = 'dev-dataproc_temp-martin_denton_b6uf7'
-DATAPROC_CLUSTER_NAME = 'dev-dataproc_cluster-martin_denton_c7vg8'
+DATAPROC_TEMP_BUCKET = 'dev-dataproc-temp-martin-denton-b6uf7'
+DATAPROC_CLUSTER_NAME = 'dev-dataproc-cluster-martin-denton-c7vg8'
 DATAPROC_REGION = 'us-west1'
 MOVIE_REVIEWS_SCRIPT = 'movie_reviews.py'
 MOVIES_REVIEWS_INPUT = 'movie_review.csv'
@@ -28,6 +28,8 @@ MOVIES_REVIEWS_OUTPUT = 'movie_review_stage.csv'
 LOGS_REVIEWS_SCRIPT = 'log_reviews.py'
 LOGS_REVIEWS_INPUT = 'log_ewviews.csv'
 LOGS_REVIEWS_OUTPUT = 'ovie_review_stage.csv'
+STAGING_BUCKET = 'dev-staging-martin-denton-a5te6'
+STAGING_USER_PURCHASE_FILE = 'staging_user_purchase.csv'
 
 
 # Default arguments
@@ -100,10 +102,10 @@ with DAG(
     task_user_purchase_postgres_to_csv_in_bucket = PostgresToGCSOperator(
         task_id="user_purchase_postgres_to_csv_in_bucet",
         postgres_conn_id="postgres_default",
-        google_cloud_storage_conn_id="google_default",
+        google_cloud_storage_conn_id="google_cloud_default",
         sql=f"select customer_id, quantity, unit_price from {USER_PURCHASE_TABLE_NAME};",
-        bucket="{{var.value.STAGING_BUCKET}}",
-        filename="{{var.value.CLEAN_USER_PURCHASE_FILE}}",
+        bucket=STAGING_BUCKET,
+        filename=STAGING_USER_PURCHASE_FILE,
         export_format="CSV",
         gzip=False,
         use_server_side_cursor=True,
@@ -134,13 +136,13 @@ with DAG(
         },
         region=DATAPROC_REGION,
         cluster_name=DATAPROC_CLUSTER_NAME,
-        gcp_conn_id="google_default",
+        gcp_conn_id="google_cloud_default",
     )
 
     task_spark_movie_reviews_job = DataprocSubmitPySparkJobOperator(
         task_id="spark_movie_reviews_job",
         main=MOVIE_REVIEWS_SCRIPT,
-        gcp_conn_id="google_default",
+        gcp_conn_id="google_cloud_default",
         cluster_name=DATAPROC_CLUSTER_NAME,
         job_name="movie_reviews_job",
         dataproc_jars=[
@@ -159,7 +161,7 @@ with DAG(
     task_spark_log_reviews_job = DataprocSubmitPySparkJobOperator(
         task_id="spark_log_reviews_job",
         main=LOGS_REVIEWS_SCRIPT,
-        gcp_conn_id="google_default",
+        gcp_conn_id="google_cloud_default",
         cluster_name=DATAPROC_CLUSTER_NAME,
         job_name="log_reviews_job",
         dataproc_jars=[
@@ -180,7 +182,7 @@ with DAG(
         project_id=PROJECT_ID,
         region=DATAPROC_REGION,
         cluster_name=DATAPROC_CLUSTER_NAME,
-        gcp_conn_id="google_default",
+        gcp_conn_id="google_cloud_default",
         trigger_rule="all_done",
     )
 
@@ -190,5 +192,5 @@ with DAG(
     (task_create_user_purchase_table >> task_load_user_purchase_data_to_db >> task_user_purchase_postgres_to_csv_in_bucket)
 
     # Movie and logs reviews files
-    (task_create_dataproc_cluster >> [task_spark_movie_reviews_job, task_spark_log_reviews_job])
+    (task_create_dataproc_cluster >> [task_spark_movie_reviews_job, task_spark_log_reviews_job] >> task_delete_dataproc_cluster)
 
