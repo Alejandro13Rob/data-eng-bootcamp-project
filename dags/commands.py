@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.utils import dates
+from airflow.settings import AIRFLOW_HOME
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks.base_hook import BaseHook
 
@@ -12,9 +13,6 @@ logger.setLevel(logging.INFO)
 
 default_args = {
     "owner": "roberto.mendoza",
-    "description": (
-            "print the airflow connections in URI format"
-        ),
     'depends_on_past': False,
     'start_date': dates.days_ago(1),
     "retries": 1,
@@ -31,8 +29,12 @@ def print_uris():
     print(f"AIRFLOW_CONN_{conn2.conn_id.upper()}='{conn2.get_uri()}'")
 
 
+def print_home():
+    print("$AIRFLOW_HOME=", AIRFLOW_HOME)
+
+
 with DAG(
-    "print_uris",
+    "print_utilities",
     schedule_interval=None,
     start_date=datetime(2022, 4, 13),
     default_args=default_args,
@@ -44,4 +46,10 @@ with DAG(
         python_callable=print_uris,
     )
 
-    task_print_uris
+    task_home = PythonOperator(
+        task_id="where_is_home",
+        python_callable=print_home,
+        provide_context=True
+    )
+
+    task_print_uris, task_home
