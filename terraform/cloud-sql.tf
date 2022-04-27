@@ -41,7 +41,7 @@ resource "google_sql_database_instance" "master" {
       }
     }
     location_preference {
-      zone = "us-west1-a"
+      zone = "us-west3-a"
     }
   }
 
