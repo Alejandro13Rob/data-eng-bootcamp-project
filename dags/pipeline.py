@@ -17,7 +17,7 @@ from airflow.providers.google.cloud.operators.dataproc import (
 
 
 CSV_FILENAME = 'user_purchase.csv'
-PROJECT_ID = 'data-bootcamp-8739'
+PROJECT_ID = 'data-bootcamp-76724'
 USER_PURCHASE_TABLE_NAME = 'user_purchase'
 DATAPROC_TEMP_BUCKET = 'dev-dataproc-temp-martin-denton-b6uf7'
 DATAPROC_CLUSTER_NAME = 'dev-dataproc-cluster-martin-denton-c7vg8'

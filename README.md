@@ -68,7 +68,7 @@ helm install airflow apache-airflow/airflow --namespace airflow --version 1.0.0
 
 #### First time before running the project
 You will need to create a new `values.yaml` according to the version of airflow you are running.
-Follow the same commands as in `. ./airflow_on_kubernetes.sh` but before creating the secrets run
+Follow the same commands as in `. ./airflow_on_kubernetes.sh` but before creating the secrets change your user name in the coomand and your `.env` file.
 
 Generate a private key with ssh-keygen
 ````
